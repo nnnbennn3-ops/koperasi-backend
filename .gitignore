@@ -1,0 +1,16 @@
+# Virtual Environment
+.venv/
+venv/
+ENV/
+
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Ini penting lohyah
+.env
+
+# IDE / Editor
+.vscode/
+.idea/
