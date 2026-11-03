@@ -12,6 +12,9 @@ from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from src.configs.database import Base
 
+# Tambahkan ini di bagian atas SavingEntity.py
+from src.entities.master.SavingTypeEntity import MtrSavingType
+
 
 class TrxSavingAccount(Base):
     __tablename__ = "trx_saving_account"
@@ -28,9 +31,7 @@ class TrxSavingAccount(Base):
     is_active = Column(Boolean, nullable=False, default=True)
     created_at = Column(DateTime, nullable=False, server_default=func.sysutcdatetime())
 
-    saving_type = relationship(
-        "MtrSavingType", back_populates="saving_accounts", foreign_keys=[saving_type_id]
-    )
+    saving_type = relationship("MtrSavingType", foreign_keys=[saving_type_id])
     transactions = relationship(
         "TrxSavingTransaction",
         back_populates="saving_account",

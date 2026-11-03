@@ -10,9 +10,3 @@ class MtrSavingType(Base):
     saving_type_code = Column(String(20), nullable=False, unique=True, index=True)
     saving_type_name = Column(String(50), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
-
-    saving_accounts = relationship(
-        "TrxSavingAccount",
-        back_populates="saving_type",
-        foreign_keys="TrxSavingAccount.saving_type_id",
-    )

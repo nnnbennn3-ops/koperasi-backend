@@ -3,12 +3,13 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from src.middlewares.VerifiedToken import verify_token
 from src.utils.AuthContext import AuthContext, get_auth_context
+from src.controllers.master import SavingTypeController
 
 app = FastAPI(
     title="Koperasi Karyawan Backend API",
     version="1.0.0",
     description="Backend Service untuk Koperasi Karyawan Clean Architecture",
-    dependencies=[Depends(verify_token)],
+    # dependencies=[Depends(verify_token)],
 )
 
 # CORS
@@ -19,6 +20,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(SavingTypeController.router)
 
 
 @app.get("/")
