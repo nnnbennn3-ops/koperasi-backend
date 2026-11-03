@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from src.configs.database import get_db
-from src.payloads.schemas.master.SavingTypeSchema import CommonResponse
+from src.exceptions.RequestException import ResponseException
+from src.payloads.responses.CommonResponse import payload_response
+from src.payloads.schemas.master.SavingTypeSchema import SavingTypeResponse
 from src.services.master import SavingTypeService
 
 # JWT
@@ -13,7 +15,6 @@ router = APIRouter(prefix="/api/v1/master", tags=["Master: Saving Type"])
 
 @router.get(
     "/saving-type",
-    response_model=CommonResponse,
     status_code=status.HTTP_200_OK,
 )
 def get_saving_type_by_id(
@@ -25,17 +26,14 @@ def get_saving_type_by_id(
     if err is not None:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Database error: {str(err)}",
+            detail=ResponseException(500),
         )
 
     if not result:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail="Data saving type tidak ditemukan",
+            detail=ResponseException(404),
         )
 
-    return CommonResponse(
-        status_code=200,
-        message="Success",
-        data=result,
-    )
+    response_data = SavingTypeResponse.model_validate(result)
+    return payload_response(200, "Success retrieve saving type", response_data)
