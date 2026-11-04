@@ -1,7 +1,8 @@
 import os
+from fastapi import HTTPException, status
 import jwt
-import requests
 from jwt.algorithms import RSAAlgorithm
+import requests
 from src.configs.config import settings
 
 _cached_public_key = None
@@ -13,7 +14,6 @@ def get_public_key():
     if _cached_public_key is not None:
         return _cached_public_key
 
-    # Ambil jwks dari user-service
     try:
         if hasattr(settings, "user_service_url") and settings.user_service_url:
             user_url = settings.user_service_url.rstrip("/")
@@ -33,7 +33,6 @@ def get_public_key():
     except Exception:
         pass
 
-    # Fallback ke public.pem kalau user-servicenya offline
     base_dir = os.path.dirname(
         os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     )
@@ -46,6 +45,7 @@ def get_public_key():
 
 
 def extract_token(api_key: str) -> dict:
+    """Mengekstrak dan memverifikasi token RS256 dengan error handling rapi."""
     if not api_key:
         return {}
     if "Bearer" in api_key:
@@ -55,14 +55,27 @@ def extract_token(api_key: str) -> dict:
         api_key_short = api_key
 
     key = get_public_key()
-    payload = jwt.decode(
-        api_key_short,
-        key,
-        algorithms=[ALGORITHM],
-        leeway=2,
-        options={"verify_aud": False},
-    )
-    return payload
+    try:
+        payload = jwt.decode(
+            api_key_short,
+            key,
+            algorithms=[ALGORITHM],
+            leeway=2,
+            options={"verify_aud": False},
+        )
+        return payload
+    except jwt.ExpiredSignatureError:
+        # Tangkap token expired secara sopan -> HTTP 401
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired, please log in again",
+        )
+    except jwt.InvalidTokenError:
+        # Tangkap token palsu / signature salah -> HTTP 401
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token signature",
+        )
 
 
 def extract_user_id_from_token(api_key: str | None) -> int | None:

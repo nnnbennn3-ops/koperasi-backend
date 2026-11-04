@@ -17,7 +17,7 @@ class Settings(BaseSettings):
 
     user_service_url: str = Field(..., alias="USER_SERVICE_URL")
     finance_service_url: str = Field(..., alias="FINANCE_SERVICE_URL")
-    general_service_url: str = Field("", alias="GENERAL_SERVICE_URL")
+    general_service_url: str = Field(..., alias="GENERAL_SERVICE_URL")
 
 
 settings = Settings()

@@ -1,6 +1,10 @@
 from dataclasses import dataclass
-from fastapi import HTTPException, Request
+from fastapi import HTTPException, Request, Security
+from fastapi.security.api_key import APIKeyHeader
 from src.utils.ExtractToken import extract_token
+
+# Menandai ke Swagger bahwa endpoint butuh Header Authorization
+api_key_header = APIKeyHeader(name="authorization", auto_error=False)
 
 
 @dataclass
@@ -11,9 +15,11 @@ class AuthContext:
     payload: dict | None = None
 
 
-def get_auth_context(request: Request) -> AuthContext:
-    """Ekstrak data identitas user dari JWT."""
-    authorization = request.headers.get("authorization")
+def get_auth_context(
+    request: Request, api_key: str | None = Security(api_key_header)
+) -> AuthContext:
+    """Mengekstrak dan memvalidasi JWT token dari Header Authorization."""
+    authorization = api_key or request.headers.get("authorization")
     if not authorization:
         raise HTTPException(status_code=401, detail="Missing Authorization Header")
 

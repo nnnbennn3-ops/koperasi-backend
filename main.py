@@ -1,15 +1,14 @@
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
-from src.middlewares.VerifiedToken import verify_token
-from src.utils.AuthContext import AuthContext, get_auth_context
 from src.controllers.master import SavingTypeController
+from src.controllers.transaction import (
+    DashboardController,
+)
 
 app = FastAPI(
     title="Koperasi Karyawan Backend API",
     version="1.0.0",
     description="Backend Service untuk Koperasi Karyawan Clean Architecture",
-    # dependencies=[Depends(verify_token)],
 )
 
 # CORS
@@ -21,6 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# REGISTER ROUTERS
+app.include_router(DashboardController.router)
 app.include_router(SavingTypeController.router)
 
 
@@ -36,14 +37,3 @@ def root():
 @app.get("/health")
 def health_check():
     return {"status": "healthy"}
-
-
-# Contoh protected endpoint yang membaca user_id dari JWT
-@app.get("/api/v1/profile")
-def get_my_profile(auth: AuthContext = Depends(get_auth_context)):
-    return {
-        "message": "Token valid!",
-        "user_id": auth.user_id,
-        "company_id": auth.company_id,
-        "payload": auth.payload,
-    }
